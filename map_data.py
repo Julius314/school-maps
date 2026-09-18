@@ -15,6 +15,7 @@ DATEN = ORDNER / "data"
 KOORDINATEN_CACHE = ORDNER / "cache" / "coordinates.json"
 FEHLENDE_ADRESSEN = ORDNER / "output" / "missing_addresses.csv"
 NOMINATIM_USER_AGENT = "reform-static-school-maps/1.0"
+REGIONALER_SUFFIX = ", Schleswig-Holstein, Germany"
 
 
 def excel_zeilen_lesen():
@@ -49,11 +50,15 @@ class Standortsuche:
     def __init__(self):
         self.cache = (json.loads(KOORDINATEN_CACHE.read_text(encoding="utf-8"))
                       if KOORDINATEN_CACHE.exists() else {})
+        alter_cache = self.cache
+        self.cache = {adresse: punkt for adresse, punkt in alter_cache.items()
+                      if _gueltiger_punkt(punkt)}
         geocoder = Nominatim(user_agent=NOMINATIM_USER_AGENT, timeout=20)
         self.geocode = RateLimiter(geocoder.geocode, min_delay_seconds=1.2,
-                                  max_retries=0, swallow_exceptions=False)
+                                  max_retries=5, error_wait_seconds=3.0,
+                                  swallow_exceptions=False)
         self.fehlende = set()
-        self.geaendert = False
+        self.geaendert = self.cache != alter_cache
         self.versucht = set()
 
     def _als_fehlend_melden(self, rolle, name, adress_text, fehler):
@@ -72,17 +77,18 @@ class Standortsuche:
             return None
         if _gueltiger_punkt(self.cache.get(adress_text)):
             return self.cache[adress_text]
-        # Ein Cache-Eintrag mit null heißt: Die Adresse wurde ohne Treffer gesucht.
-        # Auch innerhalb eines Laufs wird dieselbe Adresse nicht erneut angefragt.
-        if adress_text in self.cache or adress_text in self.versucht:
+        # Innerhalb eines Laufs wird dieselbe Adresse nicht erneut angefragt.
+        if adress_text in self.versucht:
             self._als_fehlend_melden(
-                rolle, name, adress_text, "Kein Nominatim-Treffer (Cache)"
+                rolle, name, adress_text, "Standort im aktuellen Lauf nicht gefunden"
             )
             return None
         self.versucht.add(adress_text)
 
         try:
-            treffer = self.geocode(adress_text)
+            suchadresse = (adress_text if adress_text.endswith(REGIONALER_SUFFIX)
+                           else adress_text + REGIONALER_SUFFIX)
+            treffer = self.geocode(suchadresse)
             if treffer:
                 punkt = [treffer.longitude, treffer.latitude]
                 self.cache[adress_text] = punkt
@@ -95,9 +101,7 @@ class Standortsuche:
                 "%s: %s" % (type(fehler).__name__, fehler),
             )
             return None
-        # Ein erfolgreich beantworteter Aufruf ohne Treffer bleibt im Cache.
-        self.cache[adress_text] = None
-        self.geaendert = True
+        # Fehlende Standorte werden beim nächsten Lauf erneut gesucht.
         self._als_fehlend_melden(
             rolle, name, adress_text, "Kein Nominatim-Treffer"
         )
@@ -198,7 +202,12 @@ def punkte_laden():
         schulname = zeile.get("sh_schule_name")
         if isinstance(schulname, str):
             korrektur = korrekturen.get(("Schule", schulname.strip()), {})
-            schuladresse = korrektur.get("address") or adresse(zeile, "schule")
+            schuladresse = adresse(zeile, "schule")
+            # Bei mehreren Standorten gilt die Korrektur nur für diese Adresse.
+            if ("original_address" in korrektur
+                    and korrektur["original_address"] != schuladresse):
+                korrektur = {}
+            schuladresse = korrektur.get("address") or schuladresse
             punkt = standortsuche.finden(
                 schuladresse, "Schule", schulname, korrektur.get("coordinates")
             )

@@ -3551,23 +3551,28 @@
     10.4086913,
     53.6084544
   ],
-  "Kurt-Wagner-Straße 11, 25337 Elmshorn": null,
-  "Haus 4a, 25938 Süderende": null,
-  "Schulstraße 5, 25899 Klixbüll": null,
-  "Dorflücke 18, 25917 Stadum": null,
-  "Boy-Peter-Eben-Weg 2, 25980 Sylt, OT Tinnum": null,
-  "St. Nicolai-Straße 6, 25980 Sylt, OT Westerland": null,
-  "Hautpstraße 8, 25860 Horstedt": null,
-  "Tonderner Straße 12, 25980 Sylt, OT Westerland": null,
-  "Dorfstraße 96, 23714 Malente, OT Sieversdorf": null,
-  "Wiesenweg 1, 23684 Scharbeutz, OT Pönitz": null,
-  "Mühlenstraße 2-4, 23769 Fehmarn, OT Burg": null,
-  "Kantstraße 1, 23769 Fehmarn, OT Burg": null,
-  "Heidkampsstraße 10, 25451 Quickborn": null,
-  "Bahnhofsstraße 27, 25868 Stapel": null,
-  "Hersbarg 2, 24861 Berghusen": null,
-  "Schleswiger Straße 16-18, 24986 Mittelangeln, OT Satrup": null,
-  "Am Gymnasium 4, 24986 Mittelangeln, OT Satrup": null,
-  "Dennertweg 2a, 24986 Mittelangeln, OT Satrup": null,
-  "Am Sportfeld 3, 24641 Sievershütten": null
+  "Dorflücken 18, 25917 Stadum": [
+    9.0526973,
+    54.7396278
+  ],
+  "Hauptstraße 8, 25860 Horstedt": [
+    9.0681349,
+    54.5212014
+  ],
+  "Kurt Wagener-Straße 11, 25337 Elmshorn": [
+    9.7000637,
+    53.7449717
+  ],
+  "Heidkampstraße 10, 25451 Quickborn": [
+    9.9059267,
+    53.7216052
+  ],
+  "Bahnhofstraße 27, 25868 Stapel": [
+    9.2291176,
+    54.3546157
+  ],
+  "Hersbarg 2, 24861 Bergenhusen": [
+    9.313822,
+    54.3734892
+  ]
 }
